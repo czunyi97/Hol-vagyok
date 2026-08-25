@@ -1,0 +1,14 @@
+/* Map v5: stable desktop sizing + one shared map frame for both modes. */
+@media(min-width:901px){
+  .map-wrap{inset:0 0 204px 0!important;display:flex!important;align-items:center!important;justify-content:center!important;background:#fff!important}
+  .map{width:min(72vw,1120px)!important;height:min(calc(100% - 18px),700px)!important;aspect-ratio:1600/1400!important;flex:none!important}
+  .map-content{width:100%!important;height:100%!important;inset:0!important}
+  .map-image{width:100%!important;height:100%!important;object-fit:fill!important}
+  .map-info{top:28px!important;left:24px!important}
+}
+/* Mobile keeps the flow layout; the map itself uses the same frame ratio. */
+.map-content{transform-origin:0 0!important}
+.map-image{object-fit:fill!important}
+#guess-layer{position:absolute;inset:0;pointer-events:none;z-index:8}
+.guess-marker{width:18px!important;height:18px!important;border-radius:50%!important;background:#e34b4b!important;border:3px solid #fff!important;box-shadow:0 0 0 2px rgba(190,45,45,.9),0 2px 8px rgba(0,0,0,.28)!important;transform:translate(-50%,-50%)!important;z-index:9!important}
+@media(max-width:600px){.guess-marker{width:16px!important;height:16px!important}}
