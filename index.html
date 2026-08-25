@@ -7,6 +7,7 @@
 <title>Hol vagyok? – Magyarország</title>
 <link rel="stylesheet" href="style-v2.css?v=20260825-3">
 <link rel="stylesheet" href="style-fixes.css?v=20260825-4">
+<link rel="stylesheet" href="map-fixes-v5.css?v=20260825-5">
 </head>
 <body>
 <main class="app">
@@ -26,7 +27,6 @@
       <button id="new-game" class="new-game" type="button"><span class="refresh">↻</span> Új játék</button>
     </div>
   </header>
-
   <section class="game">
     <div class="map-shell">
       <div class="map-info">
@@ -37,7 +37,6 @@
         <div id="direction-box" class="direction-box" aria-live="polite"><span class="dir-arrow">—</span><span class="dir-text">Tippelj a térképen</span></div>
         <div class="info-note"><span>ⓘ</span> A pontos helyet nem mutatjuk meg.</div>
       </div>
-
       <div class="map-wrap">
         <div id="map" class="map">
           <div id="map-content" class="map-content">
@@ -49,7 +48,6 @@
           <div class="zoom-controls" aria-label="Térkép nagyítása"><button id="zoom-in" type="button" aria-label="Nagyítás">+</button><button id="zoom-out" type="button" aria-label="Kicsinyítés">−</button></div>
         </div>
       </div>
-
       <div class="bottom-panel">
         <div class="bottom-stats">
           <div class="stat"><span class="stat-icon">⌾</span><strong>3 próbálkozás</strong></div>
@@ -64,6 +62,6 @@
   </section>
 </main>
 <button id="zoom-reset" hidden type="button">100%</button>
-<script src="script.js?v=20260825-4"></script>
+<script src="script-v5.js?v=20260825-5"></script>
 </body>
 </html>
