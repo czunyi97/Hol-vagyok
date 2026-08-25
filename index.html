@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f5f7f3">
+<meta name="theme-color" content="#ffffff">
 <title>Hol vagyok? – Magyarország</title>
 <link rel="stylesheet" href="style-v2.css">
 </head>
@@ -11,42 +11,26 @@
 <main class="app">
   <header class="site-header">
     <div class="brand">
-      <div class="brand-icon">🗺️</div>
+      <div class="brand-logo" aria-hidden="true">
+        <svg viewBox="0 0 64 64" role="img"><path d="M7 12 22 7l20 6 15-5v42l-15 6-20-6-15 5Z" fill="#8ecb7d"/><path d="m7 12 15-5v43L7 55Zm35 1 15-5v42l-15 6Z" fill="#64b6e7"/><path d="M22 7 42 13v42l-20-5Z" fill="#f1cf5b"/><path d="M39 9c0-7 5-11 11-11s11 4 11 11c0 9-11 19-11 19S39 18 39 9Z" fill="#df3f43" transform="translate(-3 5)"/><circle cx="47" cy="14" r="4" fill="#fff"/></svg>
+      </div>
       <div class="brand-copy">
-        <div class="eyebrow">MAGYARORSZÁG • VAK TÉRKÉP</div>
+        <div class="eyebrow">MAGYARORSZÁG – VAK TÉRKÉP</div>
         <h1>Hol vagyok?</h1>
       </div>
     </div>
+    <div class="map-modes header-modes" role="group" aria-label="Térkép nézet">
+      <button id="normal-mode" class="mode active" type="button">🗺️ <span>Térkép</span></button>
+      <button id="relief-mode" class="mode" type="button">⛰️ <span>Domborzat</span></button>
+    </div>
     <div class="header-actions">
-      <div class="score-pill"><span>Pont</span><strong id="score">0</strong></div>
-      <div class="attempts"><span>Próbálkozás</span><strong><span id="attempt">1</span><b>/ 3</b></strong></div>
-      <button id="new-game" class="new-game" type="button">↻ <span>Új játék</span></button>
+      <div class="attempts"><span>Próbálkozás</span><strong><span id="attempt">1</span> / 3</strong></div>
+      <button id="new-game" class="new-game" type="button"><span class="refresh">↻</span> Új játék</button>
     </div>
   </header>
 
   <section class="game">
     <div class="map-shell">
-      <div class="map-toolbar">
-        <div class="map-modes" role="group" aria-label="Térkép nézet">
-          <button id="normal-mode" class="mode active" type="button">🗺️ Térkép</button>
-          <button id="relief-mode" class="mode" type="button">⛰️ Domborzat</button>
-        </div>
-      </div>
-
-      <div class="map-info">
-        <span class="info-label">KERESD MEG A TÉRKÉPEN</span>
-        <h2 id="city-name">Betöltés…</h2>
-        <div id="direction-box" class="direction-box" aria-live="polite">
-          <span class="dir-arrow">—</span>
-          <span class="dir-text">Tippelj a térképen</span>
-        </div>
-      </div>
-
-      <div class="zoom-controls" aria-label="Térkép nagyítása">
-        <button id="zoom-in" type="button" aria-label="Nagyítás">+</button>
-        <button id="zoom-out" type="button" aria-label="Kicsinyítés">−</button>
-      </div>
-
       <div class="map-wrap">
         <div id="map" class="map">
           <div id="map-content" class="map-content">
@@ -55,13 +39,46 @@
             <div id="guess-layer"></div>
           </div>
           <button id="map-click" class="map-click" type="button" aria-label="Tipp helyének kiválasztása"></button>
-          <div class="map-hint">Kattints a térképre • nagyításhoz görgess vagy húzd</div>
+        </div>
+
+        <div class="map-info">
+          <div class="target-icon">⌾</div>
+          <div class="info-copy">
+            <span class="info-label">KERESETT VÁROS</span>
+            <h2 id="city-name">Betöltés…</h2>
+          </div>
+          <div class="info-divider"></div>
+          <div class="last-guess-label">AZ ELŐZŐ TIPPEDTŐL</div>
+          <div id="direction-box" class="direction-box" aria-live="polite">
+            <span class="dir-arrow">—</span>
+            <span class="dir-text">Tippelj a térképen</span>
+          </div>
+          <div class="info-note"><span>ⓘ</span> A pontos helyet nem mutatjuk meg.</div>
+        </div>
+
+        <div class="zoom-controls" aria-label="Térkép nagyítása">
+          <button id="zoom-in" type="button" aria-label="Nagyítás">+</button>
+          <button id="zoom-out" type="button" aria-label="Kicsinyítés">−</button>
         </div>
       </div>
 
-      <div class="result-row">
-        <div id="result" class="result" aria-live="polite"></div>
-        <button id="next" class="next-button" type="button" disabled>Következő város →</button>
+      <div class="bottom-panel">
+        <div class="bottom-stats">
+          <div class="stat"><span class="stat-icon">⌾</span><strong>3 próbálkozás</strong></div>
+          <div class="stat"><span class="stat-icon">◎</span><strong>20 km-es találati határ</strong></div>
+          <div class="stat"><span class="stat-icon">▥</span><strong>20 magyar város</strong></div>
+          <button class="rules-button" type="button" onclick="alert('3 próbálkozásod van. Minden tipp után csak az irányt és a távolságot mutatjuk. 20 km-en belül találtad el a várost.')"><span>?</span> Játékszabály</button>
+        </div>
+        <div class="result-row">
+          <div id="result" class="result" aria-live="polite"></div>
+          <button id="next" class="next-button" type="button" disabled>Következő város →</button>
+        </div>
+        <div class="source-row">
+          <span>Térképi alap: Wikimedia Commons – Magyarország vak térképe, folyókkal és nagy tavakkal</span>
+          <span class="source-dot">•</span>
+          <span>Domborzat: Reliefkarte Ungarn (SRTM)</span>
+          <span class="external">↗</span>
+        </div>
       </div>
     </div>
   </section>
