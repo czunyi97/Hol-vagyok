@@ -1,45 +1,64 @@
-/* Final visual/mobile corrections based on the reference screenshot. */
-html,body{background:#fff}
-.map-shell,.map-wrap,.map{background:#fff}
-.map-image.normal{filter:brightness(1.32) saturate(.70) contrast(.92)!important}
+/* Reference UI final override. Keep this file intentionally small: it only fixes the mobile layout and prevents the older override rules from covering the map. */
+html,body{background:#fff!important}
+.app,.game,.map-shell,.map-wrap,.map{background:#fff!important}
+.map-image.normal{filter:brightness(1.34) saturate(.68) contrast(.90)!important}
 
-/* Keep the mobile header, map switcher, info card and zoom controls in separate zones. */
 @media(max-width:900px){
-  .app{height:100dvh;min-height:100dvh;grid-template-rows:92px minmax(0,1fr)}
-  .site-header{height:92px;padding:10px 12px;overflow:visible}
-  .header-modes{bottom:-58px;z-index:50}
-  .mode{height:50px;min-width:126px;font-size:14px;padding:0 15px}
-  .map-wrap{inset:0 0 168px 0}
-  .map-info{top:78px;left:10px;width:min(300px,calc(100% - 78px));z-index:45}
-  .zoom-controls{top:78px;right:10px;z-index:46}
-  .bottom-panel{z-index:60}
-  .source-row{z-index:61}
+  .app{height:100dvh;min-height:100dvh;grid-template-rows:88px minmax(0,1fr)!important}
+  .site-header{height:88px!important;padding:10px 12px!important;overflow:visible!important}
+  .header-modes{position:absolute!important;left:50%!important;top:98px!important;bottom:auto!important;transform:translateX(-50%)!important;z-index:50!important}
+  .map-wrap{inset:70px 0 150px 0!important;background:#fff!important}
+  .map-info{top:14px!important;left:16px!important;width:min(292px,calc(100% - 88px))!important;padding:16px 15px 13px!important;z-index:45!important}
+  .zoom-controls{top:14px!important;right:10px!important;z-index:46!important}
+  .bottom-panel{z-index:60!important}
+  .source-row{z-index:61!important}
 }
 
-@media(max-width:520px){
-  .app{grid-template-rows:94px minmax(0,1fr)}
-  .site-header{height:94px;padding:11px 10px}
-  .brand{min-width:0;max-width:58%}
-  .brand-copy{min-width:0}
-  .eyebrow{overflow:hidden;text-overflow:ellipsis}
-  .site-header h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .header-actions{flex:none}
-  .header-modes{bottom:-56px}
-  .map-wrap{inset:0 0 154px 0}
-  .map-info{top:76px;width:min(292px,calc(100% - 74px));padding:13px 14px}
-  .zoom-controls{top:76px}
-  .bottom-panel{left:10px;right:10px;bottom:8px;height:145px}
+@media(max-width:600px){
+  .site-header{height:88px!important;padding:10px 10px!important}
+  .app{grid-template-rows:88px minmax(0,1fr)!important}
+  .brand{max-width:57%!important;min-width:0}
+  .site-header h1{font-size:23px!important;white-space:nowrap}
+  .eyebrow{font-size:6.5px!important;overflow:hidden;text-overflow:ellipsis}
+  .brand-logo{width:42px!important;height:42px!important}.brand-logo svg{width:41px!important;height:41px!important}
+  .header-actions{gap:4px!important;flex:none}
+  .attempts{min-width:48px!important}.attempts span{font-size:9px!important}.attempts strong{font-size:17px!important}
+  .new-game{height:46px!important;padding:0 10px!important;font-size:12px!important}
+  .header-modes{top:98px!important}
+  .map-modes{padding:2px!important}
+  .mode{height:58px!important;min-width:116px!important;padding:0 10px!important;font-size:15px!important}
+  .map-wrap{inset:64px 0 145px 0!important}
+  .map-info{top:12px!important;left:14px!important;width:calc(100% - 92px)!important;max-width:none!important;padding:14px 13px 12px!important;border-radius:16px!important}
+  .info-copy{margin-left:38px!important}.target-icon{left:14px!important;top:20px!important;font-size:28px!important}
+  .info-label{font-size:8px!important}.map-info h2{font-size:21px!important}
+  .info-divider{margin:12px 0 10px!important}.last-guess-label{font-size:8px!important;margin-bottom:8px!important}
+  .dir-arrow{font-size:24px!important}.dir-text{font-size:12px!important}.info-note{font-size:9px!important;margin-top:10px!important;padding-top:8px!important}
+  .zoom-controls{top:12px!important;right:9px!important}.zoom-controls button{width:43px!important;height:43px!important;font-size:24px!important}
+  .bottom-panel{left:9px!important;right:9px!important;bottom:6px!important;height:138px!important;border-radius:16px!important;padding:0 8px 6px!important}
+  .bottom-stats{height:59px!important;gap:3px!important}.stat{font-size:8px!important;gap:4px!important}.stat-icon{font-size:18px!important}.stat:nth-child(3){display:none!important}
+  .rules-button{height:33px!important;font-size:8.5px!important;padding:0 8px!important}.rules-button span{width:17px!important;height:17px!important}
+  .source-row{left:8px!important;right:8px!important;height:28px!important;font-size:6px!important}
+  .result{font-size:8px!important}.result .big{font-size:12px!important}.next-button{font-size:8.5px!important;padding:7px 8px!important}
 }
 
-@media(max-width:380px){
-  .app{grid-template-rows:88px minmax(0,1fr)}
-  .site-header{height:88px}
-  .header-modes{bottom:-53px}
-  .mode{height:46px;min-width:108px;font-size:12px}
-  .map-info{top:68px;width:calc(100% - 68px)}
-  .zoom-controls{top:68px;right:8px}
-  .map-wrap{inset:0 0 150px 0}
+@media(max-width:430px){
+  .brand{gap:6px!important}.brand-logo{width:38px!important;height:38px!important}.brand-logo svg{width:37px!important;height:37px!important}
+  .site-header h1{font-size:21px!important}.eyebrow{font-size:5.8px!important}
+  .attempts{min-width:42px!important}.attempts span{font-size:8px!important}.attempts strong{font-size:16px!important}
+  .new-game{height:44px!important;padding:0 8px!important;font-size:11px!important}
+  .header-modes{top:97px!important}.mode{height:55px!important;min-width:108px!important;font-size:14px!important}
+  .map-wrap{inset:62px 0 142px 0!important}
+  .map-info{top:11px!important;left:12px!important;width:calc(100% - 86px)!important;padding:13px 12px 11px!important}
+  .target-icon{left:13px!important;top:19px!important;font-size:27px!important}.info-copy{margin-left:36px!important}.map-info h2{font-size:20px!important}
+  .zoom-controls{top:11px!important;right:8px!important}.zoom-controls button{width:41px!important;height:41px!important;font-size:23px!important}
 }
 
-/* Avoid accidental text/image selection while dragging the map on iPhone/iPad. */
-.map,.map-content,.map-image,.map-click{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+@media(max-width:370px){
+  .attempts{display:none!important}.site-header h1{font-size:20px!important}.new-game{height:42px!important}
+  .header-modes{top:93px!important}.mode{min-width:98px!important;height:52px!important;font-size:13px!important}
+  .map-wrap{inset:58px 0 136px 0!important}.map-info{top:9px!important;left:9px!important;width:calc(100% - 70px)!important}
+  .zoom-controls{top:9px!important;right:6px!important}.zoom-controls button{width:39px!important;height:39px!important;font-size:21px!important}
+  .bottom-panel{left:7px!important;right:7px!important;height:130px!important}.stat{font-size:7.5px!important}.rules-button{font-size:7.5px!important}.source-row{font-size:5.5px!important}
+}
+
+.map,.map-content,.map-image,.map-click{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
