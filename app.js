@@ -1,116 +1,23 @@
-const CITIES = [
-  ['Budapest',47.4979,19.0402],['Debrecen',47.5316,21.6273],['Szeged',46.2530,20.1414],['Pécs',46.0727,18.2323],
-  ['Győr',47.6875,17.6504],['Miskolc',48.1035,20.7784],['Nyíregyháza',47.9554,21.7167],['Kecskemét',46.8964,19.6897],
-  ['Székesfehérvár',47.1860,18.4221],['Szolnok',47.1621,20.1825],['Sopron',47.6817,16.5845],['Eger',47.9025,20.3772],
-  ['Kaposvár',46.3594,17.7968],['Zalaegerszeg',46.8417,16.8416],['Veszprém',47.0929,17.9133],['Tatabánya',47.5862,18.3940],
-  ['Békéscsaba',46.6736,21.0877],['Szombathely',47.2307,16.6218],['Salgótarján',48.0935,19.7999],['Dunaújváros',46.9619,18.9355]
-].map(([name,lat,lng])=>({name,lat,lng}));
-
-const blankMapUrl = 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Hungary_map_blank.svg';
-const mapBounds = [[45.65,16.0],[48.7,23.0]];
-const map = L.map('map',{zoomControl:false,attributionControl:false,preferCanvas:true,zoomSnap:.25,zoomDelta:.25,minZoom:5,maxZoom:10,scrollWheelZoom:true,doubleClickZoom:false});
-
-const terrain = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:17,maxNativeZoom:17,opacity:.92});
-const blank = L.imageOverlay(blankMapUrl,mapBounds,{opacity:1,interactive:false});
-
-let mode='blank';
-let target=null,attempts=0,used=[];
-let guessMarkers=[];
-
-const cityEl=document.getElementById('city');
-const attemptEl=document.getElementById('attempt');
-const feedbackEl=document.getElementById('feedback');
-const nextBtn=document.getElementById('next');
-const resultEl=document.getElementById('result');
-const drawer=document.getElementById('drawer');
-
-function distanceKm(a,b){
-  const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p;
-  const x=Math.sin(dLat/2)**2+Math.cos(a.lat*p)*Math.cos(b.lat*p)*Math.sin(dLon/2)**2;
-  return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
-}
-function bearing(a,b){
-  const p=Math.PI/180,y=Math.sin((b.lng-a.lng)*p)*Math.cos(b.lat*p);
-  const x=Math.cos(a.lat*p)*Math.sin(b.lat*p)-Math.sin(a.lat*p)*Math.cos(b.lat*p)*Math.cos((b.lng-a.lng)*p);
-  return (Math.atan2(y,x)*180/Math.PI+360)%360;
-}
-function direction(deg){
-  const dirs=[['Észak','↑'],['Északkelet','↗'],['Kelet','→'],['Délkelet','↘'],['Dél','↓'],['Délnyugat','↙'],['Nyugat','←'],['Északnyugat','↖']];
-  return dirs[Math.round(deg/45)%8];
-}
-function setFeedback(label,arrow='—',distance=''){
-  feedbackEl.innerHTML=`<span class="feedback-arrow">${arrow}</span><strong>${label}${distance?`<br><small>${distance}</small>`:''}</strong>`;
-}
+const CITIES=[['Budapest',47.4979,19.0402],['Debrecen',47.5316,21.6273],['Szeged',46.2530,20.1414],['Pécs',46.0727,18.2323],['Győr',47.6875,17.6504],['Miskolc',48.1035,20.7784],['Nyíregyháza',47.9554,21.7167],['Kecskemét',46.8964,19.6897],['Székesfehérvár',47.1860,18.4221],['Szolnok',47.1621,20.1825],['Sopron',47.6817,16.5845],['Eger',47.9025,20.3772],['Kaposvár',46.3594,17.7968],['Zalaegerszeg',46.8417,16.8416],['Veszprém',47.0929,17.9133],['Tatabánya',47.5862,18.3940],['Békéscsaba',46.6736,21.0877],['Szombathely',47.2307,16.6218],['Salgótarján',48.0935,19.7999],['Dunaújváros',46.9619,18.9355]].map(([name,lat,lng])=>({name,lat,lng}));
+const blankMapUrl='https://commons.wikimedia.org/wiki/Special:Redirect/file/Hungary_map_blank.svg';
+const mapBounds=[[45.65,16.0],[48.7,23.0]];
+const map=L.map('map',{zoomControl:false,attributionControl:false,preferCanvas:true,zoomSnap:.25,zoomDelta:.25,minZoom:5,maxZoom:10,scrollWheelZoom:true,doubleClickZoom:false});
+const terrain=L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:17,maxNativeZoom:17,opacity:.92});
+const blank=L.imageOverlay(blankMapUrl,mapBounds,{opacity:1,interactive:false});
+let mode='blank',target=null,attempts=0,used=[],guessMarkers=[];
+const cityEl=document.getElementById('city'),attemptEl=document.getElementById('attempt'),feedbackEl=document.getElementById('feedback'),nextBtn=document.getElementById('next'),resultEl=document.getElementById('result'),drawer=document.getElementById('drawer');
+function distanceKm(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,x=Math.sin(dLat/2)**2+Math.cos(a.lat*p)*Math.cos(b.lat*p)*Math.sin(dLon/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+function bearing(a,b){const p=Math.PI/180,y=Math.sin((b.lng-a.lng)*p)*Math.cos(b.lat*p),x=Math.cos(a.lat*p)*Math.sin(b.lat*p)-Math.sin(a.lat*p)*Math.cos(b.lat*p)*Math.cos((b.lng-a.lng)*p);return(Math.atan2(y,x)*180/Math.PI+360)%360;}
+function direction(deg){const dirs=[['Észak','↑'],['Északkelet','↗'],['Kelet','→'],['Délkelet','↘'],['Dél','↓'],['Délnyugat','↙'],['Nyugat','←'],['Északnyugat','↖']];return dirs[Math.round(deg/45)%8];}
+function setFeedback(label,arrow='—',distance=''){feedbackEl.innerHTML=`<span class="feedback-arrow">${arrow}</span><strong>${label}${distance?`<br><small>${distance}</small>`:''}</strong>`;}
 function clearMarkers(){guessMarkers.forEach(m=>m.remove());guessMarkers=[];}
-function marker(latlng){
-  const icon=L.divIcon({className:'guess-marker',iconSize:[18,18],iconAnchor:[9,9]});
-  const m=L.marker(latlng,{icon,interactive:false}).addTo(map);guessMarkers.push(m);
-}
-function chooseTarget(){
-  const pool=CITIES.filter(c=>!used.includes(c.name));
-  if(!pool.length){used=[];return chooseTarget();}
-  target=pool[Math.floor(Math.random()*pool.length)];used.push(target.name);
-  cityEl.textContent=target.name; attempts=0; attemptEl.textContent='1 / 3';
-  nextBtn.disabled=true; resultEl.classList.remove('show'); resultEl.textContent='';
-  setFeedback('Tippelj a térképen');
-  clearMarkers();
-}
-function newGame(){used=[];chooseTarget();map.setView([47.15,19.35],6);}
+function marker(latlng){const icon=L.divIcon({className:'guess-marker',iconSize:[18,18],iconAnchor:[9,9]});guessMarkers.push(L.marker(latlng,{icon,interactive:false}).addTo(map));}
+function chooseTarget(){const pool=CITIES.filter(c=>!used.includes(c.name));if(!pool.length){used=[];return chooseTarget();}target=pool[Math.floor(Math.random()*pool.length)];used.push(target.name);cityEl.textContent=target.name;attempts=0;attemptEl.textContent='1 / 3';nextBtn.disabled=true;resultEl.classList.remove('show');resultEl.textContent='';setFeedback('Tippelj a térképen');clearMarkers();}
+function newGame(){used=[];chooseTarget();map.fitBounds(mapBounds,{padding:[20,20]});}
 function finishRound(){nextBtn.disabled=false;}
-function guess(latlng){
-  if(!target || attempts>=3 || !nextBtn.disabled && attempts===3)return;
-  attempts++;
-  marker(latlng);
-  const d=distanceKm(latlng,target);
-  const b=bearing(latlng,target);
-  const [dir,arrow]=direction(b);
-  const remaining=Math.max(0,3-attempts);
-  setFeedback(dir,arrow,`${d.toFixed(1)} km`);
-  attemptEl.textContent=`${Math.min(attempts+1,3)} / 3`;
-
-  if(d<=20){
-    resultEl.textContent=`🎯 Talált! ${d.toFixed(1)} km-re voltál.`;
-    resultEl.classList.add('show');
-    finishRound();
-    return;
-  }
-  if(attempts>=3){
-    resultEl.textContent=`❌ Nem sikerült – ${d.toFixed(1)} km-re voltál.`;
-    resultEl.classList.add('show');
-    finishRound();
-  }else{
-    resultEl.textContent=`${d.toFixed(1)} km • ${dir} irányban van • még ${remaining} próbálkozás`;
-    resultEl.classList.add('show');
-    setTimeout(()=>resultEl.classList.remove('show'),2400);
-  }
-}
-
-function setMode(next){
-  mode=next;
-  document.getElementById('blankMode').classList.toggle('active',mode==='blank');
-  document.getElementById('terrainMode').classList.toggle('active',mode==='terrain');
-  if(mode==='terrain'){
-    blank.remove(); terrain.addTo(map);
-  }else{
-    terrain.remove(); blank.addTo(map);
-  }
-}
-
-document.getElementById('blankMode').addEventListener('click',()=>setMode('blank'));
-document.getElementById('terrainMode').addEventListener('click',()=>setMode('terrain'));
-document.getElementById('zoomIn').addEventListener('click',()=>map.zoomIn(.5));
-document.getElementById('zoomOut').addEventListener('click',()=>map.zoomOut(.5));
-map.on('click',e=>guess(e.latlng));
-nextBtn.addEventListener('click',chooseTarget);
-
-document.getElementById('menu').addEventListener('click',()=>{drawer.classList.add('open');drawer.setAttribute('aria-hidden','false');document.getElementById('menu').setAttribute('aria-expanded','true');});
-document.getElementById('closeMenu').addEventListener('click',closeDrawer);
-document.getElementById('drawerBackdrop').addEventListener('click',closeDrawer);
-document.getElementById('rules').addEventListener('click',()=>{drawer.classList.add('open');drawer.setAttribute('aria-hidden','false');});
-document.getElementById('newGame').addEventListener('click',()=>{closeDrawer();newGame();});
+function guess(latlng){if(!target||attempts>=3)return;attempts++;marker(latlng);const d=distanceKm(latlng,target),[dir,arrow]=direction(bearing(latlng,target)),remaining=Math.max(0,3-attempts);setFeedback(dir,arrow,`${d.toFixed(1)} km`);attemptEl.textContent=`${Math.min(attempts+1,3)} / 3`;if(d<=20){resultEl.textContent=`🎯 Talált! ${d.toFixed(1)} km-re voltál.`;resultEl.classList.add('show');finishRound();return;}if(attempts>=3){resultEl.textContent=`❌ Nem sikerült – ${d.toFixed(1)} km-re voltál.`;resultEl.classList.add('show');finishRound();}else{resultEl.textContent=`${d.toFixed(1)} km • ${dir} irányban van • még ${remaining} próbálkozás`;resultEl.classList.add('show');setTimeout(()=>resultEl.classList.remove('show'),2400);}}
+function setMode(next){mode=next;document.getElementById('blankMode').classList.toggle('active',mode==='blank');document.getElementById('terrainMode').classList.toggle('active',mode==='terrain');if(mode==='terrain'){blank.remove();terrain.addTo(map);}else{terrain.remove();blank.addTo(map);}}
+function openDrawer(){drawer.classList.add('open');drawer.setAttribute('aria-hidden','false');document.getElementById('menu').setAttribute('aria-expanded','true');}
 function closeDrawer(){drawer.classList.remove('open');drawer.setAttribute('aria-hidden','true');document.getElementById('menu').setAttribute('aria-expanded','false');}
-
-setMode('blank');
-map.fitBounds(mapBounds,{padding:[20,20]});
-chooseTarget();
-window.addEventListener('resize',()=>map.invalidateSize());
+document.getElementById('blankMode').addEventListener('click',()=>setMode('blank'));document.getElementById('terrainMode').addEventListener('click',()=>setMode('terrain'));document.getElementById('zoomIn').addEventListener('click',()=>map.zoomIn(.5));document.getElementById('zoomOut').addEventListener('click',()=>map.zoomOut(.5));map.on('click',e=>guess(e.latlng));nextBtn.addEventListener('click',chooseTarget);document.getElementById('menu').addEventListener('click',openDrawer);document.getElementById('infoToggle').addEventListener('click',openDrawer);document.getElementById('closeMenu').addEventListener('click',closeDrawer);document.getElementById('drawerBackdrop').addEventListener('click',closeDrawer);document.getElementById('newGame').addEventListener('click',()=>{closeDrawer();newGame();});
+setMode('blank');map.fitBounds(mapBounds,{padding:[20,20]});chooseTarget();window.addEventListener('resize',()=>map.invalidateSize());
