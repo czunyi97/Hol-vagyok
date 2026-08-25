@@ -12,40 +12,50 @@ const map = L.map('map',{
   scrollWheelZoom:true, doubleClickZoom:false, tap:true
 });
 
-// Letisztított domborzati alap. Nincs feliratos térképréteg.
-const hillshade = L.tileLayer(
-  'https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
-  {maxZoom:13,maxNativeZoom:13,opacity:.72,className:'hillshade-tiles',crossOrigin:true}
-).addTo(map);
+const DATA='https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/';
+const neighbors=new Set(['Austria','Slovakia','Ukraine','Romania','Serbia','Croatia','Slovenia']);
+let countryLayer=null, hillshade=null, riverLayer=null, lakeLayer=null;
 
-// A domborzat fölé külön, feliratmentes vektoros földrajzi rétegek kerülnek.
-const DATA = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/';
+// A clean cartographic base: pale water, white Hungary, very light neighbours.
+map.getContainer().classList.add('clean-terrain-map');
 
-const borderStyle = {
-  color:'#4d5863', weight:1.15, opacity:.72,
-  fill:false, interactive:false
-};
-const riverStyle = {
-  color:'#8fd3ef', weight:1.35, opacity:.9,
-  interactive:false
-};
-const lakeStyle = {
-  color:'#8fd3ef', weight:1, opacity:.8,
-  fillColor:'#a9ddf1', fillOpacity:.78,
-  interactive:false
-};
+fetch(DATA+'ne_50m_admin_0_countries.geojson').then(r=>r.json()).then(countries=>{
+  countryLayer=L.geoJSON(countries,{
+    style:f=>{
+      const name=f?.properties?.ADMIN||'';
+      return {
+        color:name==='Hungary'?'#66717d':'#b7bec6',
+        weight:name==='Hungary'?1.8:.8,
+        opacity:name==='Hungary'?.95:.68,
+        fillColor:name==='Hungary'?'#ffffff':(neighbors.has(name)?'#f1f3f5':'#f5f6f7'),
+        fillOpacity:name==='Hungary'?.92:.82,
+        interactive:false
+      };
+    }
+  }).addTo(map);
 
-let borderLayer=null, riverLayer=null, lakeLayer=null;
+  // Hillshade sits above the light land polygons with multiply blending, so relief remains visible.
+  hillshade=L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
+    {maxZoom:13,maxNativeZoom:13,opacity:.56,className:'hillshade-tiles',crossOrigin:true}
+  ).addTo(map);
+
+  // Keep political borders above the hillshade, but below water and guesses.
+  countryLayer.bringToFront();
+  L.geoJSON(countries,{style:f=>({
+    color:(f?.properties?.ADMIN==='Hungary')?'#58636e':'#aeb6bf',
+    weight:(f?.properties?.ADMIN==='Hungary')?1.65:.75,
+    opacity:.8,fill:false,interactive:false
+  })}).addTo(map);
+}).catch(err=>console.warn('Országrétegek:',err));
 
 Promise.all([
-  fetch(DATA+'ne_50m_admin_0_countries.geojson').then(r=>r.json()),
   fetch(DATA+'ne_50m_rivers_lake_centerlines.geojson').then(r=>r.json()),
   fetch(DATA+'ne_50m_lakes.geojson').then(r=>r.json())
-]).then(([countries,rivers,lakes])=>{
-  borderLayer=L.geoJSON(countries,{style:borderStyle}).addTo(map);
-  riverLayer=L.geoJSON(rivers,{style:riverStyle}).addTo(map);
-  lakeLayer=L.geoJSON(lakes,{style:lakeStyle}).addTo(map);
-}).catch(err=>console.warn('Térképi vektor rétegek betöltése sikertelen:',err));
+]).then(([rivers,lakes])=>{
+  lakeLayer=L.geoJSON(lakes,{style:{color:'#77c8e8',weight:1.1,opacity:.95,fillColor:'#9edcf1',fillOpacity:.92},interactive:false}).addTo(map);
+  riverLayer=L.geoJSON(rivers,{style:{color:'#79c8e8',weight:1.25,opacity:.9},interactive:false}).addTo(map);
+}).catch(err=>console.warn('Vízrétegek:',err));
 
 let target=null, attempts=0, used=[];
 const guessMarkers=[];
@@ -61,7 +71,7 @@ function bearing(a,b){const p=Math.PI/180,y=Math.sin((b.lng-a.lng)*p)*Math.cos(b
 function direction(deg){const dirs=[['Észak','↑'],['Északkelet','↗'],['Kelet','→'],['Délkelet','↘'],['Dél','↓'],['Délnyugat','↙'],['Nyugat','←'],['Északnyugat','↖']];return dirs[Math.round(deg/45)%8];}
 function setFeedback(label,arrow='—',distance=''){feedbackEl.innerHTML=`<span class="feedback-arrow">${arrow}</span><strong>${label}${distance?`<br><small>${distance}</small>`:''}</strong>`;}
 function clearMarkers(){guessMarkers.forEach(m=>m.remove());guessMarkers.length=0;}
-function addGuessMarker(latlng){const icon=L.divIcon({className:'guess-marker',iconSize:[28,28],iconAnchor:[14,14],html:'<span></span>'});const m=L.marker(latlng,{icon,interactive:false,zIndexOffset:1000}).addTo(map);guessMarkers.push(m);}
+function addGuessMarker(latlng){const icon=L.divIcon({className:'guess-marker',iconSize:[32,32],iconAnchor:[16,16],html:'<span></span>'});const m=L.marker(latlng,{icon,interactive:false,zIndexOffset:1000}).addTo(map);guessMarkers.push(m);}
 function chooseTarget(){let pool=CITIES.filter(c=>!used.includes(c.name));if(!pool.length){used=[];pool=CITIES;}target=pool[Math.floor(Math.random()*pool.length)];used.push(target.name);cityEl.textContent=target.name;attempts=0;attemptEl.textContent='1 / 3';nextBtn.disabled=true;resultEl.classList.remove('show');resultEl.textContent='';setFeedback('Tippelj a térképen');clearMarkers();}
 function newGame(){used=[];chooseTarget();map.setView([47.15,19.35],6.15,{animate:false});}
 function finishRound(){nextBtn.disabled=false;}
