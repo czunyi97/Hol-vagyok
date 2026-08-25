@@ -7,7 +7,7 @@
 <title>Hol vagyok? – Magyarország</title>
 <link rel="preconnect" href="https://unpkg.com">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="style.css?v=terrain9">
+<link rel="stylesheet" href="style.css?v=terrain10">
 </head>
 <body>
 <div class="app">
@@ -32,12 +32,12 @@
     <div class="card-divider"></div>
     <div class="hint-note"><span>ⓘ</span>A pontos helyet nem mutatjuk meg.</div>
   </section>
-  <div id="map" class="map" aria-label="Letisztított domborzati térkép Magyarországról folyókkal és tavakkal, városnevek nélkül"></div>
+  <div id="map" class="map" aria-label="Domborzati térkép Magyarországról, pontos folyókkal és tavakkal, városnevek nélkül"></div>
   <div class="zoom-control" aria-label="Nagyítás"><button id="zoomIn" aria-label="Nagyítás">+</button><button id="zoomOut" aria-label="Kicsinyítés">−</button></div>
   <button id="infoToggle" class="info-toggle" aria-expanded="false">Játékinfók <span>⌃</span></button>
   <div id="result" class="result-toast" aria-live="polite"></div>
 </main>
-<footer class="footer">Domborzati alap: Esri World Hillshade • Határok, folyók és tavak: Natural Earth</footer>
+<footer class="footer">Domborzat: Esri World Hillshade • Határok, folyók és tavak: Natural Earth 10m</footer>
 </div>
 <aside id="drawer" class="drawer" aria-hidden="true">
   <div class="drawer-backdrop" id="drawerBackdrop"></div>
@@ -49,6 +49,6 @@
   </div>
 </aside>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="app.js?v=terrain9"></script>
+<script src="app.js?v=terrain10"></script>
 </body>
 </html>
