@@ -8,7 +8,9 @@ const bounds={minLon:16.05,maxLon:22.95,minLat:45.7,maxLat:48.65};
 function distanceKm(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lon-a.lon)*p,x=Math.sin(dLat/2)**2+Math.cos(a.lat*p)*Math.cos(b.lat*p)*Math.sin(dLon/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
 function bearing(a,b){const p=Math.PI/180,y=Math.sin((b.lon-a.lon)*p)*Math.cos(b.lat*p),x=Math.cos(a.lat*p)*Math.sin(b.lat*p)-Math.sin(a.lat*p)*Math.cos(b.lat*p)*Math.cos((b.lon-a.lon)*p);return(Math.atan2(y,x)*180/Math.PI+360)%360}
 function direction(deg){const d=[['É','↑'],['ÉK','↗'],['K','→'],['DK','↘'],['D','↓'],['DNy','↙'],['Ny','←'],['ÉNy','↖']];return d[Math.round(deg/45)%8]}
-function clampPan(){const r=map.getBoundingClientRect(),maxX=r.width*(zoom-1),maxY=r.height*(zoom-1);panX=Math.max(-maxX,Math.min(0,panX));panY=Math.max(-maxY,Math.min(0,panY))}
+// The camera is deliberately allowed a little extra travel at the edges so the
+// player can always bring both the western and eastern edges into view.
+function clampPan(){const r=map.getBoundingClientRect(),maxX=r.width*(zoom-1),maxY=r.height*(zoom-1);const extraX=Math.max(24,maxX*.12),extraY=Math.max(24,maxY*.12);panX=Math.max(-maxX-extraX,Math.min(extraX,panX));panY=Math.max(-maxY-extraY,Math.min(extraY,panY))}
 function applyTransform(){clampPan();content.style.transform=`translate(${panX}px,${panY}px) scale(${zoom})`;zoomReset.textContent=`${Math.round(zoom*100)}%`}
 function setZoom(next,anchorX=.5,anchorY=.5){const old=zoom;const newZoom=Math.max(1,Math.min(3,next));if(newZoom===old)return;const r=map.getBoundingClientRect();const px=r.width*anchorX,py=r.height*anchorY;const worldX=(px-panX)/old,worldY=(py-panY)/old;zoom=newZoom;panX=px-worldX*zoom;panY=py-worldY*zoom;applyTransform()}
 function resetView(){zoom=1;panX=0;panY=0;applyTransform()}
@@ -17,7 +19,24 @@ function newRound(){attempt=0;nextBtn.disabled=true;result.innerHTML='';guessLay
 function finish(){cityEl.textContent='Játék vége!';attemptEl.textContent='–';result.innerHTML=`<div class="big ok">🎉 Végeredmény: ${score} pont</div><div class="info">Mind a ${used.length} várost végigjátszottad.</div>`;nextBtn.disabled=true;directionBox.innerHTML='<span class="dir-arrow">🏁</span><span class="dir-text">Vége</span>'}
 function setMode(relief){map.classList.toggle('relief-mode',relief);normalBtn.classList.toggle('active',!relief);reliefBtn.classList.toggle('active',relief)}
 function placeGuess(x,y){const m=document.createElement('span');m.className='guess-marker';m.style.left=`${x*100}%`;m.style.top=`${y*100}%`;guessLayer.appendChild(m)}
-function submitGuess(clientX,clientY){if(attempt>=3||!target)return;const r=map.getBoundingClientRect();const sx=(clientX-r.left-panX)/zoom/r.width,sy=(clientY-r.top-panY)/zoom/r.height;if(sx<0||sx>1||sy<0||sy>1)return;const lon=bounds.minLon+sx*(bounds.maxLon-bounds.minLon),lat=bounds.maxLat-sy*(bounds.maxLat-bounds.minLat),guess={lat,lon};const d=distanceKm(guess,target),b=bearing(guess,target);attempt++;attemptEl.textContent=Math.min(attempt+1,3);placeGuess(sx,sy);const [dir,arrow]=direction(b);directionBox.innerHTML=`<span class="dir-arrow">${arrow}</span><span class="dir-text">${dir} • ${d.toFixed(1)} km</span>`;const points=d<=5?100:d<=15?75:d<=20?50:d<=40?25:0;score+=points;scoreEl.textContent=score;if(d<=20){result.innerHTML=`<div class="big ok">🎯 Talált! ${d.toFixed(1)} km-re voltál.</div><div class="info">+${points} pont • A következő városra léphetsz.</div>`;nextBtn.disabled=false;attempt=3}else if(attempt>=3){result.innerHTML=`<div class="big bad">❌ Most nem sikerült.</div><div class="info">3 próbálkozásból nem sikerült 20 km-en belülre kerülni.</div>`;nextBtn.disabled=false;attempt=3}else{result.innerHTML=`<div class="big">📏 ${d.toFixed(1)} km</div><div class="info">A keresett város <b>${dir}</b> irányban van. Még ${3-attempt} próbálkozásod maradt.</div>`}}
+function submitGuess(clientX,clientY){if(attempt>=3||!target)return;
+  // Convert the screen point through the ACTUAL transformed map rectangle.
+  // This removes the old manual pan/zoom math that caused the Szeged -> Velence
+  // offset after zooming.
+  const cr=content.getBoundingClientRect();
+  const sx=(clientX-cr.left)/cr.width;
+  const sy=(clientY-cr.top)/cr.height;
+  if(sx<0||sx>1||sy<0||sy>1)return;
+  const lon=bounds.minLon+sx*(bounds.maxLon-bounds.minLon);
+  const lat=bounds.maxLat-sy*(bounds.maxLat-bounds.minLat);
+  const guess={lat,lon};const d=distanceKm(guess,target),b=bearing(guess,target);
+  attempt++;attemptEl.textContent=Math.min(attempt+1,3);placeGuess(sx,sy);
+  const [dir,arrow]=direction(b);directionBox.innerHTML=`<span class="dir-arrow">${arrow}</span><span class="dir-text">${dir} • ${d.toFixed(1)} km</span>`;
+  const points=d<=5?100:d<=15?75:d<=20?50:d<=40?25:0;score+=points;scoreEl.textContent=score;
+  if(d<=20){result.innerHTML=`<div class="big ok">🎯 Talált! ${d.toFixed(1)} km-re voltál.</div><div class="info">+${points} pont • A következő városra léphetsz.</div>`;nextBtn.disabled=false;attempt=3}
+  else if(attempt>=3){result.innerHTML=`<div class="big bad">❌ Most nem sikerült.</div><div class="info">3 próbálkozásból nem sikerült 20 km-en belülre kerülni.</div>`;nextBtn.disabled=false;attempt=3}
+  else{result.innerHTML=`<div class="big">📏 ${d.toFixed(1)} km</div><div class="info">A keresett város <b>${dir}</b> irányban van. Még ${3-attempt} próbálkozásod maradt.</div>`}
+}
 click.addEventListener('pointerdown',e=>{if(e.button!==undefined&&e.button!==0)return;dragging=true;moved=false;lastX=e.clientX;lastY=e.clientY;click.setPointerCapture?.(e.pointerId)});
 click.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;if(Math.abs(dx)+Math.abs(dy)>3)moved=true;if(moved&&zoom>1){panX+=dx;panY+=dy;applyTransform()}lastX=e.clientX;lastY=e.clientY});
 click.addEventListener('pointerup',e=>{if(!dragging)return;dragging=false;click.releasePointerCapture?.(e.pointerId);if(!moved)submitGuess(e.clientX,e.clientY)});
