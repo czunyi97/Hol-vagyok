@@ -1,64 +1,27 @@
-/* Reference UI final override. Keep this file intentionally small: it only fixes the mobile layout and prevents the older override rules from covering the map. */
-html,body{background:#fff!important}
-.app,.game,.map-shell,.map-wrap,.map{background:#fff!important}
+/* Responsive layout v3: mobile info panel is ABOVE the map; desktop keeps the reference overlay. */
+html,body,.app,.game,.map-shell{background:#fff!important}
 .map-image.normal{filter:brightness(1.34) saturate(.68) contrast(.90)!important}
-
+.map-info{position:absolute;z-index:20;top:28px;left:24px}
+.map-wrap{position:absolute!important;inset:0 0 204px 0!important;background:#fff!important;overflow:hidden}
+.map{background:#fff!important}
+.zoom-controls{z-index:15}
+@media(min-width:901px){.map-image{object-fit:cover!important}.map-content{inset:0!important}}
 @media(max-width:900px){
-  .app{height:100dvh;min-height:100dvh;grid-template-rows:88px minmax(0,1fr)!important}
-  .site-header{height:88px!important;padding:10px 12px!important;overflow:visible!important}
-  .header-modes{position:absolute!important;left:50%!important;top:98px!important;bottom:auto!important;transform:translateX(-50%)!important;z-index:50!important}
-  .map-wrap{inset:70px 0 150px 0!important;background:#fff!important}
-  .map-info{top:14px!important;left:16px!important;width:min(292px,calc(100% - 88px))!important;padding:16px 15px 13px!important;z-index:45!important}
-  .zoom-controls{top:14px!important;right:10px!important;z-index:46!important}
-  .bottom-panel{z-index:60!important}
-  .source-row{z-index:61!important}
+.app{height:100dvh!important;min-height:100dvh!important;grid-template-rows:88px minmax(0,1fr)!important}
+.site-header{height:88px!important;padding:10px 12px!important;overflow:visible!important}
+.header-modes{position:absolute!important;left:50%!important;top:98px!important;transform:translateX(-50%)!important;z-index:50!important}
+.map-shell{display:grid!important;grid-template-rows:auto minmax(0,1fr) 145px!important;height:100%!important;overflow:hidden!important}
+.map-info{position:relative!important;top:auto!important;left:auto!important;z-index:10!important;width:auto!important;max-width:none!important;margin:72px 14px 10px!important;padding:13px 15px 12px!important;border-radius:16px!important;box-shadow:0 5px 18px rgba(35,50,70,.08)!important}
+.map-info .info-copy{margin-left:42px!important}.map-info .target-icon{left:16px!important;top:20px!important;font-size:30px!important}.map-info .info-label{font-size:9px!important}.map-info h2{font-size:23px!important;margin-top:5px!important}.map-info .info-divider{margin:12px 0 11px!important}.map-info .last-guess-label{font-size:9px!important;margin-bottom:8px!important}.map-info .dir-arrow{font-size:26px!important}.map-info .dir-text{font-size:13px!important}.map-info .info-note{font-size:10px!important;margin-top:10px!important;padding-top:9px!important}
+.map-wrap{position:relative!important;inset:auto!important;grid-row:2!important;min-height:0!important;height:auto!important}.map{width:100%!important;height:100%!important}.map-image{object-fit:contain!important}
+.zoom-controls{top:12px!important;right:10px!important}.zoom-controls button{width:48px!important;height:48px!important;font-size:27px!important}
+.bottom-panel{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;grid-row:3!important;height:145px!important;margin:0 9px 6px!important;padding:0 9px 6px!important;border-radius:16px!important;z-index:20!important}.bottom-stats{height:59px!important;gap:4px!important}.stat{font-size:8.5px!important;gap:4px!important}.stat-icon{font-size:18px!important}.stat:nth-child(3){display:none!important}.rules-button{height:34px!important;font-size:9px!important;padding:0 8px!important}.rules-button span{width:18px!important;height:18px!important}.source-row{left:8px!important;right:8px!important;bottom:6px!important;height:28px!important;font-size:6px!important}.result-row{min-height:35px!important}.result{font-size:9px!important}.result .big{font-size:12px!important}.next-button{font-size:8.5px!important;padding:7px 8px!important}
 }
-
 @media(max-width:600px){
-  .site-header{height:88px!important;padding:10px 10px!important}
-  .app{grid-template-rows:88px minmax(0,1fr)!important}
-  .brand{max-width:57%!important;min-width:0}
-  .site-header h1{font-size:23px!important;white-space:nowrap}
-  .eyebrow{font-size:6.5px!important;overflow:hidden;text-overflow:ellipsis}
-  .brand-logo{width:42px!important;height:42px!important}.brand-logo svg{width:41px!important;height:41px!important}
-  .header-actions{gap:4px!important;flex:none}
-  .attempts{min-width:48px!important}.attempts span{font-size:9px!important}.attempts strong{font-size:17px!important}
-  .new-game{height:46px!important;padding:0 10px!important;font-size:12px!important}
-  .header-modes{top:98px!important}
-  .map-modes{padding:2px!important}
-  .mode{height:58px!important;min-width:116px!important;padding:0 10px!important;font-size:15px!important}
-  .map-wrap{inset:64px 0 145px 0!important}
-  .map-info{top:12px!important;left:14px!important;width:calc(100% - 92px)!important;max-width:none!important;padding:14px 13px 12px!important;border-radius:16px!important}
-  .info-copy{margin-left:38px!important}.target-icon{left:14px!important;top:20px!important;font-size:28px!important}
-  .info-label{font-size:8px!important}.map-info h2{font-size:21px!important}
-  .info-divider{margin:12px 0 10px!important}.last-guess-label{font-size:8px!important;margin-bottom:8px!important}
-  .dir-arrow{font-size:24px!important}.dir-text{font-size:12px!important}.info-note{font-size:9px!important;margin-top:10px!important;padding-top:8px!important}
-  .zoom-controls{top:12px!important;right:9px!important}.zoom-controls button{width:43px!important;height:43px!important;font-size:24px!important}
-  .bottom-panel{left:9px!important;right:9px!important;bottom:6px!important;height:138px!important;border-radius:16px!important;padding:0 8px 6px!important}
-  .bottom-stats{height:59px!important;gap:3px!important}.stat{font-size:8px!important;gap:4px!important}.stat-icon{font-size:18px!important}.stat:nth-child(3){display:none!important}
-  .rules-button{height:33px!important;font-size:8.5px!important;padding:0 8px!important}.rules-button span{width:17px!important;height:17px!important}
-  .source-row{left:8px!important;right:8px!important;height:28px!important;font-size:6px!important}
-  .result{font-size:8px!important}.result .big{font-size:12px!important}.next-button{font-size:8.5px!important;padding:7px 8px!important}
+.site-header{height:88px!important;padding:10px 10px!important}.app{grid-template-rows:88px minmax(0,1fr)!important}.brand{gap:7px!important;max-width:58%!important}.brand-logo{width:42px!important;height:42px!important}.brand-logo svg{width:41px!important;height:41px!important}.eyebrow{font-size:6.5px!important;overflow:hidden;text-overflow:ellipsis}.site-header h1{font-size:23px!important;white-space:nowrap}.header-actions{gap:4px!important}.attempts{min-width:47px!important}.attempts span{font-size:9px!important}.attempts strong{font-size:17px!important}.new-game{height:46px!important;padding:0 10px!important;font-size:12px!important}.header-modes{top:98px!important}.mode{height:58px!important;min-width:116px!important;font-size:15px!important;padding:0 10px!important}.map-info{margin:70px 14px 9px!important;padding:13px 14px 11px!important}.map-info .info-copy{margin-left:40px!important}.map-info .target-icon{left:15px!important;top:19px!important;font-size:29px!important}.map-info h2{font-size:22px!important}.bottom-panel{height:140px!important}
 }
-
 @media(max-width:430px){
-  .brand{gap:6px!important}.brand-logo{width:38px!important;height:38px!important}.brand-logo svg{width:37px!important;height:37px!important}
-  .site-header h1{font-size:21px!important}.eyebrow{font-size:5.8px!important}
-  .attempts{min-width:42px!important}.attempts span{font-size:8px!important}.attempts strong{font-size:16px!important}
-  .new-game{height:44px!important;padding:0 8px!important;font-size:11px!important}
-  .header-modes{top:97px!important}.mode{height:55px!important;min-width:108px!important;font-size:14px!important}
-  .map-wrap{inset:62px 0 142px 0!important}
-  .map-info{top:11px!important;left:12px!important;width:calc(100% - 86px)!important;padding:13px 12px 11px!important}
-  .target-icon{left:13px!important;top:19px!important;font-size:27px!important}.info-copy{margin-left:36px!important}.map-info h2{font-size:20px!important}
-  .zoom-controls{top:11px!important;right:8px!important}.zoom-controls button{width:41px!important;height:41px!important;font-size:23px!important}
+.brand{gap:6px!important}.brand-logo{width:38px!important;height:38px!important}.brand-logo svg{width:37px!important;height:37px!important}.site-header h1{font-size:21px!important}.eyebrow{font-size:5.8px!important}.attempts{min-width:42px!important}.attempts span{font-size:8px!important}.attempts strong{font-size:16px!important}.new-game{height:44px!important;padding:0 8px!important;font-size:11px!important}.header-modes{top:97px!important}.mode{height:55px!important;min-width:108px!important;font-size:14px!important}.map-info{margin:66px 10px 8px!important;padding:11px 12px 10px!important;border-radius:15px!important}.map-info .info-copy{margin-left:36px!important}.map-info .target-icon{left:13px!important;top:17px!important;font-size:27px!important}.map-info .info-label{font-size:8px!important}.map-info h2{font-size:20px!important}.map-info .info-divider{margin:10px 0 9px!important}.map-info .last-guess-label{font-size:8px!important;margin-bottom:7px!important}.map-info .dir-arrow{font-size:23px!important}.map-info .dir-text{font-size:12px!important}.map-info .info-note{font-size:9px!important;margin-top:8px!important;padding-top:7px!important}.zoom-controls{top:10px!important;right:8px!important}.zoom-controls button{width:42px!important;height:42px!important;font-size:23px!important}.bottom-panel{height:136px!important;margin:0 8px 5px!important}.bottom-stats{height:58px!important}.stat{font-size:8px!important}.rules-button{height:32px!important;font-size:8.5px!important}.source-row{font-size:5.8px!important;height:27px!important}
 }
-
-@media(max-width:370px){
-  .attempts{display:none!important}.site-header h1{font-size:20px!important}.new-game{height:42px!important}
-  .header-modes{top:93px!important}.mode{min-width:98px!important;height:52px!important;font-size:13px!important}
-  .map-wrap{inset:58px 0 136px 0!important}.map-info{top:9px!important;left:9px!important;width:calc(100% - 70px)!important}
-  .zoom-controls{top:9px!important;right:6px!important}.zoom-controls button{width:39px!important;height:39px!important;font-size:21px!important}
-  .bottom-panel{left:7px!important;right:7px!important;height:130px!important}.stat{font-size:7.5px!important}.rules-button{font-size:7.5px!important}.source-row{font-size:5.5px!important}
-}
-
+@media(max-width:370px){.attempts{display:none!important}.site-header h1{font-size:20px!important}.new-game{height:42px!important}.header-modes{top:93px!important}.mode{min-width:98px!important;height:52px!important;font-size:13px!important}.map-info{margin:61px 8px 7px!important;padding:10px 10px 9px!important}.map-info .info-copy{margin-left:34px!important}.map-info h2{font-size:18px!important}.map-info .target-icon{left:11px!important;top:15px!important;font-size:25px!important}.bottom-panel{height:130px!important;margin:0 7px 4px!important}.stat{font-size:7.5px!important}.rules-button{font-size:7.5px!important}.source-row{font-size:5.3px!important}}
 .map,.map-content,.map-image,.map-click{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
