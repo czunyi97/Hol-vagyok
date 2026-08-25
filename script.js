@@ -1,15 +1,15 @@
 const cities=[['Budapest',47.4979,19.0402],['Debrecen',47.5316,21.6273],['Szeged',46.2530,20.1414],['Pécs',46.0727,18.2323],['Győr',47.6875,17.6504],['Miskolc',48.1035,20.7784],['Nyíregyháza',47.9554,21.7167],['Kecskemét',46.8964,19.6897],['Székesfehérvár',47.1860,18.4221],['Szolnok',47.1621,20.1825],['Sopron',47.6817,16.5845],['Eger',47.9025,20.3772],['Kaposvár',46.3594,17.7968],['Zalaegerszeg',46.8417,16.8416],['Veszprém',47.0929,17.9133],['Tatabánya',47.5862,18.3940],['Békéscsaba',46.6736,21.0877],['Szombathely',47.2307,16.6218],['Salgótarján',48.0935,19.7999],['Dunaújváros',46.9619,18.9355]].map(([name,lat,lon])=>({name,lat,lon}));
-const map=document.getElementById('map'),click=document.getElementById('map-click'),guessLayer=document.getElementById('guess-layer');
+const map=document.getElementById('map'),content=document.getElementById('map-content'),click=document.getElementById('map-click'),guessLayer=document.getElementById('guess-layer');
 const cityEl=document.getElementById('city-name'),attemptEl=document.getElementById('attempt'),scoreEl=document.getElementById('score'),result=document.getElementById('result'),nextBtn=document.getElementById('next'),newBtn=document.getElementById('new-game');
 const directionBox=document.getElementById('direction-box'),normalBtn=document.getElementById('normal-mode'),reliefBtn=document.getElementById('relief-mode');
-const zoomIn=document.getElementById('zoom-in'),zoomOut=document.getElementById('zoom-out'),zoomReset=document.getElementById('zoom-reset'),zoomLevel=document.getElementById('zoom-level');
+const zoomIn=document.getElementById('zoom-in'),zoomOut=document.getElementById('zoom-out'),zoomReset=document.getElementById('zoom-reset');
 let target,attempt,score,used=[];let zoom=1,panX=0,panY=0,dragging=false,moved=false,lastX=0,lastY=0;
 const bounds={minLon:16.05,maxLon:22.95,minLat:45.7,maxLat:48.65};
 function distanceKm(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lon-a.lon)*p,x=Math.sin(dLat/2)**2+Math.cos(a.lat*p)*Math.cos(b.lat*p)*Math.sin(dLon/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
 function bearing(a,b){const p=Math.PI/180,y=Math.sin((b.lon-a.lon)*p)*Math.cos(b.lat*p),x=Math.cos(a.lat*p)*Math.sin(b.lat*p)-Math.sin(a.lat*p)*Math.cos(b.lat*p)*Math.cos((b.lon-a.lon)*p);return(Math.atan2(y,x)*180/Math.PI+360)%360}
 function direction(deg){const d=[['É','↑'],['ÉK','↗'],['K','→'],['DK','↘'],['D','↓'],['DNy','↙'],['Ny','←'],['ÉNy','↖']];return d[Math.round(deg/45)%8]}
 function clampPan(){const r=map.getBoundingClientRect(),maxX=r.width*(zoom-1),maxY=r.height*(zoom-1);panX=Math.max(-maxX,Math.min(0,panX));panY=Math.max(-maxY,Math.min(0,panY))}
-function applyTransform(){clampPan();const transform=`translate(${panX}px,${panY}px) scale(${zoom})`;document.querySelectorAll('.map-image').forEach(el=>el.style.transform=transform);guessLayer.style.transform=transform;zoomLevel.textContent=`${Math.round(zoom*100)}%`}
+function applyTransform(){clampPan();const transform=`translate(${panX}px,${panY}px) scale(${zoom})`;content.style.transform=transform;zoomReset.textContent=`${Math.round(zoom*100)}%`}
 function setZoom(next,centerX=.5,centerY=.5){const old=zoom;zoom=Math.max(1,Math.min(3,next));if(zoom===old)return;const r=map.getBoundingClientRect(),cx=r.width*centerX,cy=r.height*centerY;panX=cx-(cx-panX)*(zoom/old);panY=cy-(cy-panY)*(zoom/old);applyTransform()}
 function resetView(){zoom=1;panX=0;panY=0;applyTransform()}
 function start(){score=0;used=[];scoreEl.textContent=0;resetView();newRound()}
@@ -22,6 +22,6 @@ click.addEventListener('pointerdown',e=>{if(e.button!==undefined&&e.button!==0)r
 click.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;if(Math.abs(dx)+Math.abs(dy)>2)moved=true;if(moved&&zoom>1){panX+=dx;panY+=dy;applyTransform()}lastX=e.clientX;lastY=e.clientY});
 click.addEventListener('pointerup',e=>{if(!dragging)return;dragging=false;click.releasePointerCapture?.(e.pointerId);if(!moved)submitGuess(e.clientX,e.clientY)});
 click.addEventListener('pointercancel',()=>{dragging=false});
-click.addEventListener('wheel',e=>{e.preventDefault();const r=click.getBoundingClientRect();const cx=(e.clientX-r.left)/r.width,cy=(e.clientY-r.top)/r.height;setZoom(zoom+(e.deltaY<0?.25:-.25),cx,cy)},{passive:false});
+click.addEventListener('wheel',e=>{e.preventDefault();const r=click.getBoundingClientRect(),cx=(e.clientX-r.left)/r.width,cy=(e.clientY-r.top)/r.height;setZoom(zoom+(e.deltaY<0?.25:-.25),cx,cy)},{passive:false});
 zoomIn.addEventListener('click',()=>setZoom(zoom+.25));zoomOut.addEventListener('click',()=>setZoom(zoom-.25));zoomReset.addEventListener('click',resetView);
 nextBtn.addEventListener('click',newRound);newBtn.addEventListener('click',start);normalBtn.addEventListener('click',()=>setMode(false));reliefBtn.addEventListener('click',()=>setMode(true));setMode(false);applyTransform();start();
