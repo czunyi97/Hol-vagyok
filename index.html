@@ -1,1 +1,27 @@
-<!DOCTYPE html><html lang="hu"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hol vagyok</title><link rel="stylesheet" href="style.css"></head><body><div class="wrap"><h1>🇭🇺 Hol vagyok?</h1><div class="panel"><label>Nehézség <select id="difficulty"><option value="easy">Könnyű</option><option value="medium">Közepes</option></select></label><button onclick="startGame()">Játék indítása</button></div><div id="game" class="hidden"><h2 id="city"></h2><p>Pont: <span id="score">0</span> | Tippek: <span id="tries">3</span></p><div id="map"><img src="https://upload.wikimedia.org/wikipedia/commons/8/87/Hungary_location_map.svg"></div><p id="msg"></p></div><div id="top"></div></div><script src="script.js"></script></body></html>
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0f172a"><title>Hol vagyok? – Magyarország</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="app">
+<header><div><div class="eyebrow">MAGYARORSZÁG • VAK TÉRKÉP</div><h1>Hol vagyok?</h1></div><div class="scorebox"><span>Pont</span><strong id="score">0</strong></div></header>
+<section class="card">
+<div class="question-row"><div><span class="muted">Keresd meg a térképen:</span><h2 id="city-name">Betöltés…</h2></div><div class="attempts"><span class="muted">Próbálkozás</span><strong><span id="attempt">1</span> / 3</strong></div></div>
+<div class="map-wrap">
+<svg id="map" viewBox="0 0 800 520" role="img" aria-label="Magyarország vak térképe">
+<defs><filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-opacity=".15"/></filter></defs>
+<rect class="map-bg" width="800" height="520" rx="24"/>
+<path class="country" filter="url(#shadow)" d="M118 121 L176 91 L246 84 L310 62 L365 75 L429 56 L486 78 L560 82 L618 112 L677 132 L663 181 L696 226 L673 277 L692 323 L658 360 L636 405 L579 414 L539 444 L468 432 L411 453 L356 435 L299 446 L253 420 L199 425 L164 388 L120 374 L136 328 L106 293 L122 251 L99 207 L128 173 Z"/>
+<path class="river" d="M102 257 C178 247 206 273 269 260 C335 246 365 265 423 248 C496 226 532 242 593 218 C636 202 672 208 706 196"/>
+<path class="river" d="M226 93 C238 145 244 186 257 230 C271 282 267 342 282 425"/>
+<g id="markers"></g><g id="feedback"></g>
+</svg><div class="map-hint">Kattints oda, ahol szerinted a város található.</div>
+</div>
+<div id="result" class="result" aria-live="polite"></div>
+<div class="controls"><button id="new-game" class="secondary">Új játék</button><button id="next" class="primary" disabled>Következő város</button></div>
+</section><footer>3 próbálkozás • 20 km-es találati határ • 20 magyar város</footer>
+</main><script src="script.js"></script>
+</body></html>
