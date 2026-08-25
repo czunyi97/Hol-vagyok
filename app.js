@@ -12,17 +12,40 @@ const map = L.map('map',{
   scrollWheelZoom:true, doubleClickZoom:false, tap:true
 });
 
-// Tiszta domborzati alap: a World Hillshade adja a reliefet,
-// a Terrain Base csak a víz/határ-környezetet és minimális térképi struktúrát adja.
-// A két réteg együtt nem tartalmaz településneveket.
+// Letisztított domborzati alap. Nincs feliratos térképréteg.
 const hillshade = L.tileLayer(
   'https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
-  {maxZoom:13,maxNativeZoom:13,opacity:.82,className:'hillshade-tiles',crossOrigin:true}
+  {maxZoom:13,maxNativeZoom:13,opacity:.72,className:'hillshade-tiles',crossOrigin:true}
 ).addTo(map);
-const terrainBase = L.tileLayer(
-  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}',
-  {maxZoom:13,maxNativeZoom:13,opacity:.28,className:'terrain-base-tiles',crossOrigin:true}
-).addTo(map);
+
+// A domborzat fölé külön, feliratmentes vektoros földrajzi rétegek kerülnek.
+const DATA = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/';
+
+const borderStyle = {
+  color:'#4d5863', weight:1.15, opacity:.72,
+  fill:false, interactive:false
+};
+const riverStyle = {
+  color:'#8fd3ef', weight:1.35, opacity:.9,
+  interactive:false
+};
+const lakeStyle = {
+  color:'#8fd3ef', weight:1, opacity:.8,
+  fillColor:'#a9ddf1', fillOpacity:.78,
+  interactive:false
+};
+
+let borderLayer=null, riverLayer=null, lakeLayer=null;
+
+Promise.all([
+  fetch(DATA+'ne_50m_admin_0_countries.geojson').then(r=>r.json()),
+  fetch(DATA+'ne_50m_rivers_lake_centerlines.geojson').then(r=>r.json()),
+  fetch(DATA+'ne_50m_lakes.geojson').then(r=>r.json())
+]).then(([countries,rivers,lakes])=>{
+  borderLayer=L.geoJSON(countries,{style:borderStyle}).addTo(map);
+  riverLayer=L.geoJSON(rivers,{style:riverStyle}).addTo(map);
+  lakeLayer=L.geoJSON(lakes,{style:lakeStyle}).addTo(map);
+}).catch(err=>console.warn('Térképi vektor rétegek betöltése sikertelen:',err));
 
 let target=null, attempts=0, used=[];
 const guessMarkers=[];
@@ -38,7 +61,7 @@ function bearing(a,b){const p=Math.PI/180,y=Math.sin((b.lng-a.lng)*p)*Math.cos(b
 function direction(deg){const dirs=[['Észak','↑'],['Északkelet','↗'],['Kelet','→'],['Délkelet','↘'],['Dél','↓'],['Délnyugat','↙'],['Nyugat','←'],['Északnyugat','↖']];return dirs[Math.round(deg/45)%8];}
 function setFeedback(label,arrow='—',distance=''){feedbackEl.innerHTML=`<span class="feedback-arrow">${arrow}</span><strong>${label}${distance?`<br><small>${distance}</small>`:''}</strong>`;}
 function clearMarkers(){guessMarkers.forEach(m=>m.remove());guessMarkers.length=0;}
-function addGuessMarker(latlng){const icon=L.divIcon({className:'guess-marker',iconSize:[26,26],iconAnchor:[13,13],html:'<span></span>'});const m=L.marker(latlng,{icon,interactive:false,zIndexOffset:1000}).addTo(map);guessMarkers.push(m);}
+function addGuessMarker(latlng){const icon=L.divIcon({className:'guess-marker',iconSize:[28,28],iconAnchor:[14,14],html:'<span></span>'});const m=L.marker(latlng,{icon,interactive:false,zIndexOffset:1000}).addTo(map);guessMarkers.push(m);}
 function chooseTarget(){let pool=CITIES.filter(c=>!used.includes(c.name));if(!pool.length){used=[];pool=CITIES;}target=pool[Math.floor(Math.random()*pool.length)];used.push(target.name);cityEl.textContent=target.name;attempts=0;attemptEl.textContent='1 / 3';nextBtn.disabled=true;resultEl.classList.remove('show');resultEl.textContent='';setFeedback('Tippelj a térképen');clearMarkers();}
 function newGame(){used=[];chooseTarget();map.setView([47.15,19.35],6.15,{animate:false});}
 function finishRound(){nextBtn.disabled=false;}
