@@ -1,0 +1,45 @@
+/* Final visual/mobile corrections based on the reference screenshot. */
+html,body{background:#fff}
+.map-shell,.map-wrap,.map{background:#fff}
+.map-image.normal{filter:brightness(1.32) saturate(.70) contrast(.92)!important}
+
+/* Keep the mobile header, map switcher, info card and zoom controls in separate zones. */
+@media(max-width:900px){
+  .app{height:100dvh;min-height:100dvh;grid-template-rows:92px minmax(0,1fr)}
+  .site-header{height:92px;padding:10px 12px;overflow:visible}
+  .header-modes{bottom:-58px;z-index:50}
+  .mode{height:50px;min-width:126px;font-size:14px;padding:0 15px}
+  .map-wrap{inset:0 0 168px 0}
+  .map-info{top:78px;left:10px;width:min(300px,calc(100% - 78px));z-index:45}
+  .zoom-controls{top:78px;right:10px;z-index:46}
+  .bottom-panel{z-index:60}
+  .source-row{z-index:61}
+}
+
+@media(max-width:520px){
+  .app{grid-template-rows:94px minmax(0,1fr)}
+  .site-header{height:94px;padding:11px 10px}
+  .brand{min-width:0;max-width:58%}
+  .brand-copy{min-width:0}
+  .eyebrow{overflow:hidden;text-overflow:ellipsis}
+  .site-header h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .header-actions{flex:none}
+  .header-modes{bottom:-56px}
+  .map-wrap{inset:0 0 154px 0}
+  .map-info{top:76px;width:min(292px,calc(100% - 74px));padding:13px 14px}
+  .zoom-controls{top:76px}
+  .bottom-panel{left:10px;right:10px;bottom:8px;height:145px}
+}
+
+@media(max-width:380px){
+  .app{grid-template-rows:88px minmax(0,1fr)}
+  .site-header{height:88px}
+  .header-modes{bottom:-53px}
+  .mode{height:46px;min-width:108px;font-size:12px}
+  .map-info{top:68px;width:calc(100% - 68px)}
+  .zoom-controls{top:68px;right:8px}
+  .map-wrap{inset:0 0 150px 0}
+}
+
+/* Avoid accidental text/image selection while dragging the map on iPhone/iPad. */
+.map,.map-content,.map-image,.map-click{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
