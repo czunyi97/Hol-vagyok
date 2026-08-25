@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#17213a">
+<meta name="theme-color" content="#ffffff">
 <title>Hol vagyok? – Magyarország</title>
 <link rel="preconnect" href="https://unpkg.com">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="style.css?v=terrain6">
+<link rel="stylesheet" href="style.css?v=terrain7">
 </head>
 <body>
 <div class="app">
@@ -24,7 +24,7 @@
 </header>
 
 <main class="map-stage">
-  <div class="layer-pill" aria-label="Aktív térképmód">⛰️ <strong>Domborzat</strong></div>
+  <div class="layer-pill" aria-label="Aktív térképmód">⛰️ <strong>Domborzati térkép</strong></div>
 
   <section class="target-card" aria-live="polite">
     <div class="target-heading"><span class="target-icon">◎</span><div><small>KERESSETT VÁROS</small><strong id="city">Betöltés…</strong></div></div>
@@ -35,7 +35,7 @@
     <div class="hint-note"><span>ⓘ</span>A pontos helyet nem mutatjuk meg.</div>
   </section>
 
-  <div id="map" class="map" aria-label="Feliratmentes, szürkés domborzati térkép Magyarországról folyókkal és tavakkal"></div>
+  <div id="map" class="map" aria-label="Letisztított domborzati térkép Magyarországról folyókkal és tavakkal, városnevek nélkül"></div>
   <div class="zoom-control" aria-label="Nagyítás"><button id="zoomIn" aria-label="Nagyítás">+</button><button id="zoomOut" aria-label="Kicsinyítés">−</button></div>
   <button id="infoToggle" class="info-toggle" aria-expanded="false">Játékinfók <span>⌃</span></button>
   <div id="result" class="result-toast" aria-live="polite"></div>
@@ -54,6 +54,6 @@
   </div>
 </aside>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="app.js?v=terrain6"></script>
+<script src="app.js?v=terrain7"></script>
 </body>
 </html>
