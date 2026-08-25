@@ -14,47 +14,68 @@ const map = L.map('map',{
 
 const DATA='https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/';
 const neighbors=new Set(['Austria','Slovakia','Ukraine','Romania','Serbia','Croatia','Slovenia']);
-let countryLayer=null, hillshade=null, riverLayer=null, lakeLayer=null;
+let countryFill=null, borderLayer=null, hillshade=null, riverLayer=null, lakeLayer=null;
 
-// A clean cartographic base: pale water, white Hungary, very light neighbours.
 map.getContainer().classList.add('clean-terrain-map');
 
+// Dedicated panes keep the map visually clean and, importantly, keep relief visible over land.
+map.createPane('reliefPane');
+map.getPane('reliefPane').style.zIndex=300;
+map.createPane('borderPane');
+map.getPane('borderPane').style.zIndex=410;
+map.createPane('waterPane');
+map.getPane('waterPane').style.zIndex=420;
+
 fetch(DATA+'ne_50m_admin_0_countries.geojson').then(r=>r.json()).then(countries=>{
-  countryLayer=L.geoJSON(countries,{
+  countryFill=L.geoJSON(countries,{
     style:f=>{
       const name=f?.properties?.ADMIN||'';
       return {
-        color:name==='Hungary'?'#66717d':'#b7bec6',
-        weight:name==='Hungary'?1.8:.8,
-        opacity:name==='Hungary'?.95:.68,
-        fillColor:name==='Hungary'?'#ffffff':(neighbors.has(name)?'#f1f3f5':'#f5f6f7'),
-        fillOpacity:name==='Hungary'?.92:.82,
+        color:'transparent',weight:0,
+        fillColor:name==='Hungary'?'#ffffff':(neighbors.has(name)?'#f0f2f4':'#f6f7f8'),
+        fillOpacity:name==='Hungary'?.98:.9,
         interactive:false
       };
     }
   }).addTo(map);
 
-  // Hillshade sits above the light land polygons with multiply blending, so relief remains visible.
   hillshade=L.tileLayer(
     'https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
-    {maxZoom:13,maxNativeZoom:13,opacity:.56,className:'hillshade-tiles',crossOrigin:true}
+    {
+      pane:'reliefPane',maxZoom:13,maxNativeZoom:13,opacity:.9,
+      className:'hillshade-tiles',crossOrigin:true,updateWhenZooming:true,keepBuffer:2
+    }
   ).addTo(map);
 
-  // Keep political borders above the hillshade, but below water and guesses.
-  countryLayer.bringToFront();
-  L.geoJSON(countries,{style:f=>({
-    color:(f?.properties?.ADMIN==='Hungary')?'#58636e':'#aeb6bf',
-    weight:(f?.properties?.ADMIN==='Hungary')?1.65:.75,
-    opacity:.8,fill:false,interactive:false
-  })}).addTo(map);
+  borderLayer=L.geoJSON(countries,{
+    pane:'borderPane',
+    style:f=>{
+      const hungary=f?.properties?.ADMIN==='Hungary';
+      const name=f?.properties?.ADMIN||'';
+      return {
+        color:hungary?'#4a5560':(neighbors.has(name)?'#8b96a1':'#c0c6cc'),
+        weight:hungary?2.35:.9,
+        opacity:hungary?.98:.72,
+        fill:false,interactive:false
+      };
+    }
+  }).addTo(map);
 }).catch(err=>console.warn('Országrétegek:',err));
 
 Promise.all([
   fetch(DATA+'ne_50m_rivers_lake_centerlines.geojson').then(r=>r.json()),
   fetch(DATA+'ne_50m_lakes.geojson').then(r=>r.json())
 ]).then(([rivers,lakes])=>{
-  lakeLayer=L.geoJSON(lakes,{style:{color:'#77c8e8',weight:1.1,opacity:.95,fillColor:'#9edcf1',fillOpacity:.92},interactive:false}).addTo(map);
-  riverLayer=L.geoJSON(rivers,{style:{color:'#79c8e8',weight:1.25,opacity:.9},interactive:false}).addTo(map);
+  lakeLayer=L.geoJSON(lakes,{
+    pane:'waterPane',
+    style:{color:'#58bfe8',weight:1.25,opacity:1,fillColor:'#8edaf2',fillOpacity:.96},
+    interactive:false
+  }).addTo(map);
+  riverLayer=L.geoJSON(rivers,{
+    pane:'waterPane',
+    style:{color:'#5fc3e9',weight:1.45,opacity:.96},
+    interactive:false
+  }).addTo(map);
 }).catch(err=>console.warn('Vízrétegek:',err));
 
 let target=null, attempts=0, used=[];
