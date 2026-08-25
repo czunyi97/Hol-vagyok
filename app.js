@@ -6,109 +6,93 @@ const CITIES = [
   ['Békéscsaba',46.6736,21.0877],['Szombathely',47.2307,16.6218],['Salgótarján',48.0935,19.7999],['Dunaújváros',46.9619,18.9355]
 ].map(([name,lat,lng])=>({name,lat,lng}));
 
-const map = L.map('map',{
-  zoomControl:false, attributionControl:false, preferCanvas:true,
-  zoomSnap:.25, zoomDelta:.25, minZoom:5.25, maxZoom:13,
-  scrollWheelZoom:true, doubleClickZoom:false, tap:true,
-  maxBoundsViscosity:.65
+const map=L.map('map',{
+  zoomControl:false,attributionControl:false,preferCanvas:true,
+  minZoom:5.5,maxZoom:12,zoomSnap:.1,zoomDelta:.5,
+  scrollWheelZoom:true,doubleClickZoom:true,tap:true,worldCopyJump:false
 });
 
-const DATA='https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/';
+const NE='https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/';
+const NE_COUNTRIES=NE+'ne_10m_admin_0_countries.geojson';
+const NE_LAKES=NE+'ne_10m_lakes.geojson';
+const NE_RIVERS=NE+'ne_10m_rivers_europe.geojson';
 const neighbors=new Set(['Austria','Slovakia','Ukraine','Romania','Serbia','Croatia','Slovenia']);
-let countriesLayer=null, borderLayer=null, hillshade=null, hillshade2=null, riverLayer=null, lakeLayer=null;
 
-map.getContainer().classList.add('clean-terrain-map');
-map.createPane('landPane');
-map.getPane('landPane').style.zIndex=250;
-map.createPane('reliefPane');
-map.getPane('reliefPane').style.zIndex=300;
-map.createPane('reliefPane2');
-map.getPane('reliefPane2').style.zIndex=305;
-map.createPane('borderPane');
-map.getPane('borderPane').style.zIndex=410;
-map.createPane('waterPane');
-map.getPane('waterPane').style.zIndex=430;
+map.createPane('landPane');map.getPane('landPane').style.zIndex=250;
+map.createPane('reliefPane');map.getPane('reliefPane').style.zIndex=300;
+map.createPane('borderPane');map.getPane('borderPane').style.zIndex=410;
+map.createPane('waterPane');map.getPane('waterPane').style.zIndex=430;
 
-const countryStyle = feature => {
-  const name=feature?.properties?.ADMIN||'';
-  const hu=name==='Hungary';
-  const near=neighbors.has(name);
-  return {
-    color:'transparent',weight:0,
-    fillColor:hu?'#ffffff':(near?'#eef1f3':'#f5f6f7'),
-    fillOpacity:hu?.60:(near?.78:.55),
-    interactive:false
-  };
-};
-
-fetch(DATA+'ne_50m_admin_0_countries.geojson')
-.then(r=>r.json())
-.then(countries=>{
-  countriesLayer=L.geoJSON(countries,{pane:'landPane',style:countryStyle}).addTo(map);
-
-  hillshade=L.tileLayer(
-    'https://services.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
-    {pane:'reliefPane',maxZoom:13,maxNativeZoom:13,opacity:.68,className:'hillshade-primary',updateWhenZooming:true,keepBuffer:3}
-  ).addTo(map);
-
-  hillshade2=L.tileLayer(
-    'https://services.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
-    {pane:'reliefPane2',maxZoom:13,maxNativeZoom:13,opacity:.22,className:'hillshade-detail',updateWhenZooming:true,keepBuffer:3}
-  ).addTo(map);
-
-  borderLayer=L.geoJSON(countries,{
-    pane:'borderPane',
+// 1) Tiszta országfelületek: Magyarország fehér, a környezet nagyon halvány szürke.
+fetch(NE_COUNTRIES).then(r=>r.json()).then(data=>{
+  L.geoJSON(data,{
+    pane:'landPane',
     style:f=>{
-      const name=f?.properties?.ADMIN||'';
-      const hu=name==='Hungary';
-      const near=neighbors.has(name);
-      return {
-        color:hu?'#56616c':(near?'#89939d':'#c5cbd0'),
-        weight:hu?2.25:(near?1.15:.65),
-        opacity:hu?.98:(near?.78:.5),
-        fill:false,interactive:false,lineCap:'round',lineJoin:'round'
-      };
+      const n=f?.properties?.ADMIN||'';
+      const hu=n==='Hungary';
+      const near=neighbors.has(n);
+      return {color:'transparent',weight:0,fillColor:hu?'#ffffff':near?'#f0f3f5':'#f7f8f9',fillOpacity:hu?1:.95,interactive:false};
     }
   }).addTo(map);
-}).catch(err=>console.warn('Országrétegek:',err));
 
-Promise.all([
-  fetch(DATA+'ne_50m_rivers_lake_centerlines.geojson').then(r=>r.json()),
-  fetch(DATA+'ne_50m_lakes.geojson').then(r=>r.json())
-]).then(([rivers,lakes])=>{
-  lakeLayer=L.geoJSON(lakes,{
-    pane:'waterPane',
-    filter:f=>Number(f?.properties?.scalerank??9)<=5,
-    style:f=>({color:'#65c9ec',weight:1.35,opacity:.95,fillColor:'#9bdef3',fillOpacity:.94,interactive:false})
+  // 2) Pontosan ugyanarra a geometriára kerül a határ.
+  L.geoJSON(data,{
+    pane:'borderPane',
+    style:f=>{
+      const n=f?.properties?.ADMIN||'';
+      const hu=n==='Hungary';
+      const near=neighbors.has(n);
+      return {color:hu?'#4c5661':near?'#87929d':'#c5cbd1',weight:hu?2.2:near?1.05:.65,opacity:hu?1:.7,fill:false,interactive:false};
+    }
   }).addTo(map);
+}).catch(e=>console.warn('Natural Earth országok:',e));
 
-  riverLayer=L.geoJSON(rivers,{
+// 3) Valódi hillshade, feliratok és utak nélkül.
+const relief=L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
+  {pane:'reliefPane',maxZoom:12,maxNativeZoom:12,opacity:.64,className:'hillshade-primary',crossOrigin:true,updateWhenZooming:true,keepBuffer:3}
+).addTo(map);
+
+// 4) 10m-es tavak: a Balaton, Velencei-tó, Fertő-tó és a kisebb vízfelületek valódi geometriával.
+fetch(NE_LAKES).then(r=>r.json()).then(data=>{
+  L.geoJSON(data,{
     pane:'waterPane',
-    filter:f=>Number(f?.properties?.scalerank??9)<=5,
-    style:f=>({color:'#5fc6ea',weight:Number(f?.properties?.scalerank??5)<=2?2.0:1.25,opacity:.96,lineCap:'round',lineJoin:'round',interactive:false})
+    style:{color:'#52bce8',weight:1.05,opacity:1,fillColor:'#9cdef3',fillOpacity:.92},
+    interactive:false
   }).addTo(map);
-}).catch(err=>console.warn('Vízrétegek:',err));
+}).catch(e=>console.warn('Natural Earth tavak:',e));
 
-let target=null, attempts=0, used=[];
+// 5) Európa 10m-es folyóhálózata. A fő folyók hangsúlyosak, a kisebbek finomabbak.
+fetch(NE_RIVERS).then(r=>r.json()).then(data=>{
+  L.geoJSON(data,{
+    pane:'waterPane',
+    style:f=>{
+      const p=f?.properties||{};
+      const rank=Number(p.scalerank ?? p.scale_rank ?? 6);
+      const name=String(p.name_en||p.name||'');
+      const major=/Danube|Duna|Tisza|Drava|Sava|Mura|Rába|Raab/i.test(name);
+      return {color:'#4bb9e6',weight:major?2.25:(rank<=4?1.45:.8),opacity:major?1:.72,interactive:false};
+    }
+  }).addTo(map);
+}).catch(e=>console.warn('Natural Earth folyók:',e));
+
+let target=null,attempts=0,used=[];
 const guessMarkers=[];
-const cityEl=document.getElementById('city');
-const attemptEl=document.getElementById('attempt');
-const feedbackEl=document.getElementById('feedback');
-const nextBtn=document.getElementById('next');
-const resultEl=document.getElementById('result');
-const drawer=document.getElementById('drawer');
+const cityEl=document.getElementById('city'),attemptEl=document.getElementById('attempt'),feedbackEl=document.getElementById('feedback');
+const nextBtn=document.getElementById('next'),resultEl=document.getElementById('result'),drawer=document.getElementById('drawer');
 
 function distanceKm(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p;const x=Math.sin(dLat/2)**2+Math.cos(a.lat*p)*Math.cos(b.lat*p)*Math.sin(dLon/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
 function bearing(a,b){const p=Math.PI/180,y=Math.sin((b.lng-a.lng)*p)*Math.cos(b.lat*p);const x=Math.cos(a.lat*p)*Math.sin(b.lat*p)-Math.sin(a.lat*p)*Math.cos(b.lat*p)*Math.cos((b.lng-a.lng)*p);return (Math.atan2(y,x)*180/Math.PI+360)%360;}
-function direction(deg){const dirs=[['Észak','↑'],['Északkelet','↗'],['Kelet','→'],['Délkelet','↘'],['Dél','↓'],['Délnyugat','↙'],['Nyugat','←'],['Északnyugat','↖']];return dirs[Math.round(deg/45)%8];}
+function direction(deg){const d=[['Észak','↑'],['Északkelet','↗'],['Kelet','→'],['Délkelet','↘'],['Dél','↓'],['Délnyugat','↙'],['Nyugat','←'],['Északnyugat','↖']];return d[Math.round(deg/45)%8];}
 function setFeedback(label,arrow='—',distance=''){feedbackEl.innerHTML=`<span class="feedback-arrow">${arrow}</span><strong>${label}${distance?`<br><small>${distance}</small>`:''}</strong>`;}
 function clearMarkers(){guessMarkers.forEach(m=>m.remove());guessMarkers.length=0;}
-function addGuessMarker(latlng){const icon=L.divIcon({className:'guess-marker',iconSize:[38,38],iconAnchor:[19,19],html:'<span></span>'});const m=L.marker(latlng,{icon,interactive:false,zIndexOffset:1000}).addTo(map);guessMarkers.push(m);}
+function addGuessMarker(latlng){const icon=L.divIcon({className:'guess-marker',iconSize:[40,40],iconAnchor:[20,20],html:'<span></span>'});const m=L.marker(latlng,{icon,interactive:false,zIndexOffset:1000}).addTo(map);guessMarkers.push(m);}
 function chooseTarget(){let pool=CITIES.filter(c=>!used.includes(c.name));if(!pool.length){used=[];pool=CITIES;}target=pool[Math.floor(Math.random()*pool.length)];used.push(target.name);cityEl.textContent=target.name;attempts=0;attemptEl.textContent='1 / 3';nextBtn.disabled=true;resultEl.classList.remove('show');resultEl.textContent='';setFeedback('Tippelj a térképen');clearMarkers();}
-function newGame(){used=[];chooseTarget();map.fitBounds([[45.55,15.65],[48.95,23.15]],{padding:[20,20],animate:false});}
+function newGame(){used=[];chooseTarget();map.setView([47.15,19.35],6.15,{animate:false});}
+function finishRound(){nextBtn.disabled=false;}
 function guess(latlng){if(!target||attempts>=3)return;attempts++;addGuessMarker(latlng);const d=distanceKm(latlng,target);const [dir,arrow]=direction(bearing(latlng,target));const remaining=3-attempts;setFeedback(dir,arrow,`${d.toFixed(1)} km`);attemptEl.textContent=`${Math.min(attempts+1,3)} / 3`;
-  if(d<=20){resultEl.textContent=`🎯 Talált! ${d.toFixed(1)} km-re voltál.`;resultEl.classList.add('show');nextBtn.disabled=false;return;}
-  if(attempts>=3){resultEl.textContent=`❌ Nem sikerült – ${d.toFixed(1)} km-re voltál.`;resultEl.classList.add('show');nextBtn.disabled=false;}
+  if(d<=20){resultEl.textContent=`🎯 Talált! ${d.toFixed(1)} km-re voltál.`;resultEl.classList.add('show');finishRound();return;}
+  if(attempts>=3){resultEl.textContent=`❌ Nem sikerült – ${d.toFixed(1)} km-re voltál.`;resultEl.classList.add('show');finishRound();}
   else{resultEl.textContent=`${d.toFixed(1)} km • ${dir} irányban van • még ${remaining} próbálkozás`;resultEl.classList.add('show');setTimeout(()=>resultEl.classList.remove('show'),2400);}
 }
 
@@ -124,7 +108,7 @@ document.getElementById('newGame').addEventListener('click',()=>{closeDrawer();n
 function openDrawer(){drawer.classList.add('open');drawer.setAttribute('aria-hidden','false');document.getElementById('menu').setAttribute('aria-expanded','true');document.getElementById('infoToggle').setAttribute('aria-expanded','true');}
 function closeDrawer(){drawer.classList.remove('open');drawer.setAttribute('aria-hidden','true');document.getElementById('menu').setAttribute('aria-expanded','false');document.getElementById('infoToggle').setAttribute('aria-expanded','false');}
 
-map.fitBounds([[45.55,15.65],[48.95,23.15]],{padding:[20,20],animate:false});
+map.setView([47.15,19.35],6.15,{animate:false});
 chooseTarget();
-setTimeout(()=>map.invalidateSize(),120);
+setTimeout(()=>map.invalidateSize(),250);
 window.addEventListener('resize',()=>map.invalidateSize());
